@@ -5,7 +5,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
-import Json.Decode as JD exposing (Decoder, field, map3)
+import Json.Decode as JD exposing (Decoder, field, map4)
 import Json.Encode as JE exposing (Value, encode, object)
 import List
 
@@ -28,7 +28,8 @@ main =
 
 
 type alias Contact =
-    { name : String
+    { id_ : Int
+    , name : String
     , number : String
     , email : String
     }
@@ -70,6 +71,7 @@ type Msg
     | Number String
     | Email String
     | SubmitForm Contact
+    | DeleteContact Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -91,14 +93,34 @@ update msg model =
                     ( { model | status = Failure }, Cmd.none )
 
         Uploaded result ->
-            --TODO: refreshirati (tj rerenderati #phonebook) nakon što se kreira novi kontakt
-            -- Pripaziti da se ne refreshira kada je failure, zato jer želimo da ostane na failure viewu
             case result of
                 Ok _ ->
-                    ( { model | status = Loading }, Cmd.none )
+                    ( { model | status = Loading }, readContacts )
 
                 Err _ ->
                     ( { model | status = Failure }, Cmd.none )
+
+        SubmitForm contact ->
+            ( model
+            , Http.post
+                { url = "https://lit-castle-97790.herokuapp.com/contacts"
+                , body = Http.jsonBody (contactEncoder contact)
+                , expect = Http.expectWhatever Uploaded
+                }
+            )
+
+        DeleteContact id ->
+            ( model
+            , Http.request
+                { method = "DELETE"
+                , headers = []
+                , url = "https://lit-castle-97790.herokuapp.com/contacts/" ++ String.fromInt id
+                , body = Http.emptyBody
+                , expect = Http.expectWhatever Uploaded
+                , timeout = Nothing
+                , tracker = Nothing
+                }
+            )
 
         Name name ->
             ( { model | form = { form | name = name } }, Cmd.none )
@@ -108,14 +130,6 @@ update msg model =
 
         Email email ->
             ( { model | form = { form | email = email } }, Cmd.none )
-
-        SubmitForm contact ->
-            ( model,
-            Http.post
-            { url = "http://localhost:9000/contacts"
-            , body = Http.jsonBody (contactEncoder contact)
-            , expect = Http.expectWhatever Uploaded
-            })
 
 
 
@@ -135,16 +149,15 @@ view : Model -> Html Msg
 view model =
     div [ id "main" ]
         [ h1 [] [ text "Phone book" ]
-        , viewForm model.form
-        , viewBody model.status
+        , viewBody model.form model.status
         ]
 
 
-viewBody : Status -> Html Msg
-viewBody status =
+viewBody : Form -> Status -> Html Msg
+viewBody form status =
     case status of
         Failure ->
-            div [ id "phonebook" ]
+            div []
                 [ p [] [ text "Couldn't load contacts for some reason." ]
                 , button [ onClick LoadContacts ] [ text "Try again" ]
                 ]
@@ -154,41 +167,50 @@ viewBody status =
 
         Success contacts ->
             div [ id "phonebook" ]
-                (List.map viewContact contacts)
+                [ viewForm form
+                , div [ id "phonebook__contacts" ] (List.map viewContact contacts)
+                ]
 
-
-viewForm : Form -> Html Msg
-viewForm form =
-    --Html.form [ method "post", action "http://localhost:9000/contacts"]
-    Html.form []
-        [ viewInput "text" " Name" form.name Name
-        , viewInput "text" " Number" form.number Number
-        , viewInput "text" " Email" form.email Email
-        , input [ onClick (SubmitForm (assembleContact form.name form.number form.email)), type_ "button", value "+" ]
-        []
-        ]
-
-viewInput : String -> String -> String -> (String -> msg) -> Html msg
-viewInput t p v toMsg =
-    input [ type_ t, placeholder p, value v, onInput toMsg ] []
-
-assembleContact: String -> String -> String -> Contact
-assembleContact name number email =
-    { name = name
-    , number = number
-    , email = email
-    }
 
 viewContact : Contact -> Html Msg
 viewContact contact =
     div [ class "contact" ]
         [ div [ class "contact__header" ]
             [ h2 [ class "contact__name" ] [ text contact.name ]
-            , button [ class "contact__dial" ] [ a [ href ("+" ++ contact.number) ] [ text "DIAL" ] ]
+            , button [ class "contact__button contact__button--dial" ] [ a [ href contact.number ] [ text "DIAL" ] ]
+            , button [ class "contact__button contact__button--delete", onClick (DeleteContact contact.id_) ] [ text "DEL" ]
             ]
         , p [ class "contact__number" ] [ a [] [ text contact.number ] ]
         , p [ class "contact__email" ] [ text contact.email ]
         ]
+
+
+viewForm : Form -> Html Msg
+viewForm form =
+    Html.form [ id "phonebook__form" ]
+        [ viewInput "Name*: " "text" "phonebook__name" " Josip" form.name Name
+        , viewInput "Number*: " "text" "phonebook__number" " 098662672" form.number Number
+        , viewInput "Email: " "text" "phonebook__email" " josip312@hotmail.com" form.email Email
+        , button [ id "phonebook__button", onClick (SubmitForm (assembleContact form.name form.number form.email)), value "+" ] [ text "+" ]
+        ]
+
+
+viewInput : String -> String -> String -> String -> String -> (String -> msg) -> Html msg
+viewInput t t_ i p v toMsg =
+    div [ class "phonebook__input clearfix" ]
+        [ label [ for i, class "phonebook__label" ] [ text t ]
+        , input [ type_ t_, id i, placeholder p, value v, onInput toMsg ] []
+        , br [] []
+        ]
+
+
+assembleContact : String -> String -> String -> Contact
+assembleContact name number email =
+    { id_ = 0
+    , name = name
+    , number = number
+    , email = email
+    }
 
 
 
@@ -198,19 +220,15 @@ viewContact contact =
 readContacts : Cmd Msg
 readContacts =
     Http.get
-        { url = "http://localhost:9000/contacts"
+        { url = "https://lit-castle-97790.herokuapp.com/contacts"
         , expect = Http.expectJson GotContacts contactListDecoder
         }
 
 
---createContact : Contact -> Cmd Msg
---createContact contact =
-
-
-
 contactDecoder : Decoder Contact
 contactDecoder =
-    map3 Contact
+    map4 Contact
+        (field "id" JD.int)
         (field "name" JD.string)
         (field "number" JD.string)
         (field "email" JD.string)
@@ -234,6 +252,7 @@ contactEncoder contact =
 -- MAYBES
 
 
+-- Not necessary atm
 checkContact : Maybe Contact -> Contact
 checkContact maybeContact =
     case maybeContact of
@@ -241,12 +260,15 @@ checkContact maybeContact =
             contact
 
         Nothing ->
-            { name = "No contacts to display"
+            { id_ = 404404
+            , name = "No contacts to display"
             , number = "098 404 404"
             , email = "get.some@friends.com"
             }
 
 
+
+-- Not necessary atm
 checkEmail : Maybe String -> String
 checkEmail maybeEmail =
     case maybeEmail of
