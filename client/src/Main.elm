@@ -1,11 +1,12 @@
-module Main exposing (Contact, Model(..), Msg(..), checkContact, contactDecoder, contactListDecoder, getContacts, init, main, subscriptions, update, view, viewContacts)
+module Main exposing (Contact, Model, Msg(..), checkContact, contactDecoder, contactListDecoder, init, main, readContacts, subscriptions, update, view, viewBody)
 
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
-import Json.Decode as JD exposing (Decoder, field, int, list, map4, string)
+import Json.Decode as JD exposing (Decoder, field, map3)
+import Json.Encode as JE exposing (Value, encode, object)
 import List
 
 
@@ -27,22 +28,34 @@ main =
 
 
 type alias Contact =
-    { id : Int
-    , name : String
+    { name : String
     , number : String
     , email : String
     }
 
 
-type Model
+type alias Form =
+    { name : String
+    , number : String
+    , email : String
+    }
+
+
+type Status
     = Failure
     | Loading
     | Success (List Contact)
 
 
+type alias Model =
+    { status : Status
+    , form : Form
+    }
+
+
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Loading, getContacts )
+    ( { status = Loading, form = { name = "", number = "", email = "" } }, readContacts )
 
 
 
@@ -52,21 +65,57 @@ init _ =
 type Msg
     = LoadContacts
     | GotContacts (Result Http.Error (List Contact))
+    | Uploaded (Result Http.Error ())
+    | Name String
+    | Number String
+    | Email String
+    | SubmitForm Contact
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    let
+        form =
+            model.form
+    in
     case msg of
         LoadContacts ->
-            ( Loading, getContacts )
+            ( { model | status = Loading }, readContacts )
 
         GotContacts result ->
             case result of
                 Ok contacts ->
-                    ( Success contacts, Cmd.none )
+                    ( { model | status = Success contacts }, Cmd.none )
 
                 Err _ ->
-                    ( Failure, Cmd.none )
+                    ( { model | status = Failure }, Cmd.none )
+
+        Uploaded result ->
+            --TODO: refreshirati (tj rerenderati #phonebook) nakon što se kreira novi kontakt
+            -- Pripaziti da se ne refreshira kada je failure, zato jer želimo da ostane na failure viewu
+            case result of
+                Ok _ ->
+                    ( { model | status = Loading }, Cmd.none )
+
+                Err _ ->
+                    ( { model | status = Failure }, Cmd.none )
+
+        Name name ->
+            ( { model | form = { form | name = name } }, Cmd.none )
+
+        Number number ->
+            ( { model | form = { form | number = number } }, Cmd.none )
+
+        Email email ->
+            ( { model | form = { form | email = email } }, Cmd.none )
+
+        SubmitForm contact ->
+            ( model,
+            Http.post
+            { url = "http://localhost:9000/contacts"
+            , body = Http.jsonBody (contactEncoder contact)
+            , expect = Http.expectWhatever Uploaded
+            })
 
 
 
@@ -84,36 +133,60 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    div []
+    div [ id "main" ]
         [ h1 [] [ text "Phone book" ]
-        , viewContacts model
+        , viewForm model.form
+        , viewBody model.status
         ]
 
 
-viewContacts : Model -> Html Msg
-viewContacts model =
-    case model of
+viewBody : Status -> Html Msg
+viewBody status =
+    case status of
         Failure ->
-            div [] [
-                p [] [ text "Couldn't load contacts for some reason." ]
+            div [ id "phonebook" ]
+                [ p [] [ text "Couldn't load contacts for some reason." ]
                 , button [ onClick LoadContacts ] [ text "Try again" ]
-            ]
+                ]
 
         Loading ->
             text "Loading..."
 
         Success contacts ->
-            div [ id "main" ]
+            div [ id "phonebook" ]
                 (List.map viewContact contacts)
 
+
+viewForm : Form -> Html Msg
+viewForm form =
+    --Html.form [ method "post", action "http://localhost:9000/contacts"]
+    Html.form []
+        [ viewInput "text" " Name" form.name Name
+        , viewInput "text" " Number" form.number Number
+        , viewInput "text" " Email" form.email Email
+        , input [ onClick (SubmitForm (assembleContact form.name form.number form.email)), type_ "button", value "+" ]
+        []
+        ]
+
+viewInput : String -> String -> String -> (String -> msg) -> Html msg
+viewInput t p v toMsg =
+    input [ type_ t, placeholder p, value v, onInput toMsg ] []
+
+assembleContact: String -> String -> String -> Contact
+assembleContact name number email =
+    { name = name
+    , number = number
+    , email = email
+    }
 
 viewContact : Contact -> Html Msg
 viewContact contact =
     div [ class "contact" ]
-        [ div [ class "contact__header" ] [
-            h2 [ class "contact__name" ] [ text contact.name ]
-            , button [ class "contact__dial" ] [ a [ href ("+" ++ contact.number) ] [ text "DIAL" ] ] ]
-        , p [ class "contact__number" ] [a [ ] [ text contact.number ]]
+        [ div [ class "contact__header" ]
+            [ h2 [ class "contact__name" ] [ text contact.name ]
+            , button [ class "contact__dial" ] [ a [ href ("+" ++ contact.number) ] [ text "DIAL" ] ]
+            ]
+        , p [ class "contact__number" ] [ a [] [ text contact.number ] ]
         , p [ class "contact__email" ] [ text contact.email ]
         ]
 
@@ -122,26 +195,39 @@ viewContact contact =
 -- HTTP
 
 
-getContacts : Cmd Msg
-getContacts =
+readContacts : Cmd Msg
+readContacts =
     Http.get
         { url = "http://localhost:9000/contacts"
         , expect = Http.expectJson GotContacts contactListDecoder
         }
 
 
+--createContact : Contact -> Cmd Msg
+--createContact contact =
+
+
+
 contactDecoder : Decoder Contact
 contactDecoder =
-    map4 Contact
-        (field "id" int)
-        (field "name" string)
-        (field "number" string)
-        (field "email" string)
+    map3 Contact
+        (field "name" JD.string)
+        (field "number" JD.string)
+        (field "email" JD.string)
 
 
 contactListDecoder : Decoder (List Contact)
 contactListDecoder =
-    list contactDecoder
+    JD.list contactDecoder
+
+
+contactEncoder : Contact -> Value
+contactEncoder contact =
+    object
+        [ ( "name", JE.string contact.name )
+        , ( "number", JE.string contact.number )
+        , ( "email", JE.string contact.email )
+        ]
 
 
 
@@ -155,8 +241,17 @@ checkContact maybeContact =
             contact
 
         Nothing ->
-            { id = 404
-            , name = "No contacts to display"
+            { name = "No contacts to display"
             , number = "098 404 404"
             , email = "get.some@friends.com"
             }
+
+
+checkEmail : Maybe String -> String
+checkEmail maybeEmail =
+    case maybeEmail of
+        Just email ->
+            email
+
+        Nothing ->
+            ""

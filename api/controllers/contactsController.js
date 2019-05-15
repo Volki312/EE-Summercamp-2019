@@ -8,7 +8,7 @@ listAllContacts = function(req, res) {
 };
 
 createContact = function(req, res) {
-  const newContact = new Contact(req.body[0]);
+  const newContact = new Contact(req.body);
   if (!newContact.name || !newContact.number) {
     res.status(400).send({
       error: true,

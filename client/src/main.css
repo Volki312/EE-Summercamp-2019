@@ -30,8 +30,8 @@ p {
     padding: 0.5em;
 }
 
-#main {
-    width: 80%;
+#phonebook {
+    width: 90%;
     margin: 0 auto;
 }
 
@@ -48,6 +48,13 @@ p {
     position: relative;
 }
 
+.contact__dial {
+    border-radius: 6px;
+    padding: 4px 10px;
+    background-color: #1E805F;
+    margin-top: 8px;
+}
+
 .contact__number {
     padding-top: 1em;
 }
@@ -56,16 +63,23 @@ p {
     padding-bottom: 1.7em;
 }
 
-.contact__dial {
-    position: absolute;
-    right: 5%;
-    top: 20%;
-    border-radius: 6px;
-    padding: 4px 10px;
-    background-color: #1E805F;
-}
-
 .contact__dial a {
     text-decoration: none;
     color: white;
+}
+
+@media only screen and (min-width: 340px) {
+    .contact__dial {
+        position: absolute;
+        right: 5%;
+        top: 20%;
+        margin: 0;
+    }
+}
+
+@media only screen and (min-width: 550px) {
+    #phonebook {
+        width: 75%;
+        margin: 0 auto;
+    }
 }
