@@ -6,18 +6,19 @@
     https://github.com/halfzebra/create-elm-app/issues/320
 */
 [data-elm-hot="true"] {
-  height: inherit;
+    height: inherit;
 }
 
 body {
-  font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
-  margin: 0;
-  text-align: center;
-  color: #293c4b;
+    font-family: "Source Sans Pro", "Trebuchet MS", "Lucida Grande",
+        "Bitstream Vera Sans", "Helvetica Neue", sans-serif;
+    margin: 0;
+    text-align: center;
+    color: #293c4b;
 }
 
 h1 {
-  font-size: 32px;
+    font-size: 32px;
 }
 
 h2 {
@@ -30,9 +31,34 @@ p {
     padding: 0.5em;
 }
 
-#main {
-    width: 80%;
+button {
+    border-radius: 6px;
+    padding: 4px 10px;
+    margin-top: 8px;
+    text-decoration: none;
+    background-color: #1e805f;
+    color: white;
+}
+
+.contact__button a {
+    text-decoration: none;
+    color: white;
+}
+
+#phonebook {
+    width: 90%;
     margin: 0 auto;
+}
+
+#phonebook__form input {
+    padding: 5px;
+    margin-bottom: 5px;
+    width: 90%;
+    border-radius: 5px;
+}
+
+#phonebook__button {
+    font-size: 22px;
 }
 
 .contact {
@@ -56,16 +82,37 @@ p {
     padding-bottom: 1.7em;
 }
 
-.contact__dial {
-    position: absolute;
-    right: 5%;
-    top: 20%;
-    border-radius: 6px;
-    padding: 4px 10px;
-    background-color: #1E805F;
+@media only screen and (min-width: 672px) {
+    .contact__button {
+        position: absolute;
+        top: 20%;
+        margin: 0;
+    }
+    .contact__button--dial {
+        right: 20%;
+    }
+    .contact__button--delete {
+        right: 5%;
+    }
+
+    #phonebook {
+        width: 75%;
+        margin: 0 auto;
+    }
+
+    #phonebook__form input {
+        width: 80%;
+        float: right;
+    }
+
+    .phonebook__label {
+        float: left;
+        margin-top: 5px;
+    }
 }
 
-.contact__dial a {
-    text-decoration: none;
-    color: white;
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
 }

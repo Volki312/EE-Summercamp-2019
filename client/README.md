@@ -14,6 +14,7 @@ elm-app install <package-name>
 .
 ├── .gitignore
 ├── README.md
+├── elmapp.config.js
 ├── elm.json
 ├── elm-stuff
 ├── public
