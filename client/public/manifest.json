@@ -3,8 +3,8 @@
   "name": "Personal Phonebook",
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "48x48",
+      "src": "favicon.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ],
