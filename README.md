@@ -49,6 +49,10 @@ Elm promotes itself as "a delightful language for reliable webapps", and they su
 
 With that being said, I have used this occasion (EE Summercamp) to polish my knowledge of Elm, and to promote language itself.
 
+## Live example
+
+Api is deployed [here](https://simplephonebook.herokuapp.com/) with Heroku, whilst client is deployed on my [personal website](http://student.oss.unist.hr/~jv46250/) that's granted by college.
+
 //TODO
 Technologies used:
 
