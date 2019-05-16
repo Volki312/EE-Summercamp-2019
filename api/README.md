@@ -4,9 +4,7 @@ This project is bootstrapped with [Express app generator](https://www.npmjs.com/
 
 ## Installing Node packages
 
-```sh
-npm install
-```
+**`npm install`**
 
 ## Folder structure
 
@@ -16,24 +14,24 @@ npm install
 ├── db.js
 ├── migrate.js
 ├── README.md
-├── bin
+├── bin/
 │   └── www
 ├── package.json
-├── public
+├── public/
 │   ├── images
 │   ├── javascripts
 │   └── stylesheets
 │       └── style.css
-├── routes
+├── routes/
 │   ├── index.js
 │   └── contacts.js
-├── migrations
+├── migrations/
 │   └── create_table_contacts.js
-├── models
+├── models/
 │   └── contactModel.js
-├── controllers
+├── controllers/
 │   └── contactsController.js
-└── views
+└── views/
     ├── error.pug
     ├── index.pug
     └── layout.pug
@@ -43,10 +41,25 @@ npm install
 
 In the project directory you can run:
 
-### `node app.js`
+**`npm start`**
 
-This will start the server on PORT 3000.
+or if you have nodemon installed:
 
-**or simply use:**
+**`nodemon`**
 
-### `nodemon`
+This will start the server on PORT 3000 (nodemon will also listen to the live changes).
+
+**`node migrate.js up`**
+
+Create a table 'contacts' and populate it with example data
+
+**`node migrate.js refresh`**
+
+Runs all down migrations followed by all up.
+
+For more commands on migrating check out [mysql-migrations npm page](https://www.npmjs.com/package/mysql-migrations#executing-migrations).
+N.B. on npm page they named their file migration.js, whilst i named mine migrate.js!
+
+### TODO:
+
+- [Optizations before deploying](https://expressjs.com/en/advanced/best-practice-performance.html)

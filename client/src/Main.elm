@@ -51,12 +51,13 @@ type Status
 type alias Model =
     { status : Status
     , form : Form
+    , api : String
     }
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { status = Loading, form = { name = "", number = "", email = "" } }, readContacts )
+init : String -> ( Model, Cmd Msg )
+init apiUrl =
+    ( { status = Loading, form = { name = "", number = "", email = "" }, api = apiUrl }, readContacts apiUrl)
 
 
 
@@ -70,7 +71,7 @@ type Msg
     | Name String
     | Number String
     | Email String
-    | SubmitForm Contact
+    | SubmitForm Contact String
     | DeleteContact Int
 
 
@@ -82,7 +83,7 @@ update msg model =
     in
     case msg of
         LoadContacts ->
-            ( { model | status = Loading }, readContacts )
+            ( { model | status = Loading }, readContacts model.api)
 
         GotContacts result ->
             case result of
@@ -95,15 +96,15 @@ update msg model =
         Uploaded result ->
             case result of
                 Ok _ ->
-                    ( { model | status = Loading }, readContacts )
+                    ( { model | status = Loading }, readContacts model.api)
 
                 Err _ ->
                     ( { model | status = Failure }, Cmd.none )
 
-        SubmitForm contact ->
+        SubmitForm contact apiUrl->
             ( model
             , Http.post
-                { url = "https://lit-castle-97790.herokuapp.com/contacts"
+                { url = apiUrl
                 , body = Http.jsonBody (contactEncoder contact)
                 , expect = Http.expectWhatever Uploaded
                 }
@@ -114,7 +115,7 @@ update msg model =
             , Http.request
                 { method = "DELETE"
                 , headers = []
-                , url = "https://lit-castle-97790.herokuapp.com/contacts/" ++ String.fromInt id
+                , url = model.api ++ String.fromInt id
                 , body = Http.emptyBody
                 , expect = Http.expectWhatever Uploaded
                 , timeout = Nothing
@@ -149,13 +150,13 @@ view : Model -> Html Msg
 view model =
     div [ id "main" ]
         [ h1 [] [ text "Phone book" ]
-        , viewBody model.form model.status
+        , viewBody model
         ]
 
 
-viewBody : Form -> Status -> Html Msg
-viewBody form status =
-    case status of
+viewBody : Model -> Html Msg
+viewBody model =
+    case model.status of
         Failure ->
             div []
                 [ p [] [ text "Couldn't load contacts for some reason." ]
@@ -167,7 +168,7 @@ viewBody form status =
 
         Success contacts ->
             div [ id "phonebook" ]
-                [ viewForm form
+                [ viewForm model
                 , div [ id "phonebook__contacts" ] (List.map viewContact contacts)
                 ]
 
@@ -177,7 +178,7 @@ viewContact contact =
     div [ class "contact" ]
         [ div [ class "contact__header" ]
             [ h2 [ class "contact__name" ] [ text contact.name ]
-            , button [ class "contact__button contact__button--dial" ] [ a [ href contact.number ] [ text "DIAL" ] ]
+            , button [ class "contact__button contact__button--dial" ] [ a [ href ("tel:+" ++ contact.number) ] [ text "DIAL" ] ]
             , button [ class "contact__button contact__button--delete", onClick (DeleteContact contact.id_) ] [ text "DEL" ]
             ]
         , p [ class "contact__number" ] [ a [] [ text contact.number ] ]
@@ -185,14 +186,20 @@ viewContact contact =
         ]
 
 
-viewForm : Form -> Html Msg
-viewForm form =
+viewForm : Model -> Html Msg
+viewForm model =
+    let
+        form =
+            model.form
+    in
+    (
     Html.form [ id "phonebook__form" ]
-        [ viewInput "Name*: " "text" "phonebook__name" " Josip" form.name Name
-        , viewInput "Number*: " "text" "phonebook__number" " 098662672" form.number Number
-        , viewInput "Email: " "text" "phonebook__email" " josip312@hotmail.com" form.email Email
-        , button [ id "phonebook__button", onClick (SubmitForm (assembleContact form.name form.number form.email)), value "+" ] [ text "+" ]
-        ]
+    [ viewInput "Name*: " "text" "phonebook__name" " Josip" form.name Name
+    , viewInput "Number*: " "text" "phonebook__number" " 098662672" form.number Number
+    , viewInput "Email: " "text" "phonebook__email" " josip312@hotmail.com" form.email Email
+    , button [ id "phonebook__button", onClick (SubmitForm (assembleContact form.name form.number form.email) model.api), value "+" ] [ text "+" ]
+    ]
+    )
 
 
 viewInput : String -> String -> String -> String -> String -> (String -> msg) -> Html msg
@@ -217,10 +224,10 @@ assembleContact name number email =
 -- HTTP
 
 
-readContacts : Cmd Msg
-readContacts =
+readContacts : String -> Cmd Msg
+readContacts api =
     Http.get
-        { url = "https://lit-castle-97790.herokuapp.com/contacts"
+        { url = api
         , expect = Http.expectJson GotContacts contactListDecoder
         }
 
