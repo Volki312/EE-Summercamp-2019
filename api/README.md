@@ -4,9 +4,7 @@ This project is bootstrapped with [Express app generator](https://www.npmjs.com/
 
 ## Installing Node packages
 
-```sh
-npm install
-```
+**`npm install`**
 
 ## Folder structure
 
@@ -16,24 +14,24 @@ npm install
 ├── db.js
 ├── migrate.js
 ├── README.md
-├── bin
+├── bin/
 │   └── www
 ├── package.json
-├── public
+├── public/
 │   ├── images
 │   ├── javascripts
 │   └── stylesheets
 │       └── style.css
-├── routes
+├── routes/
 │   ├── index.js
 │   └── contacts.js
-├── migrations
+├── migrations/
 │   └── create_table_contacts.js
-├── models
+├── models/
 │   └── contactModel.js
-├── controllers
+├── controllers/
 │   └── contactsController.js
-└── views
+└── views/
     ├── error.pug
     ├── index.pug
     └── layout.pug
@@ -43,10 +41,12 @@ npm install
 
 In the project directory you can run:
 
-### `node app.js`
+**`npm start`**
 
-This will start the server on PORT 3000.
+or if you have nodemon installed:
 
-**or simply use:**
+**`nodemon`**
 
-### `nodemon`
+This will start the server on PORT 3000 (nodemon will also listen to the live changes).
+
+

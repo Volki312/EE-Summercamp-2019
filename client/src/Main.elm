@@ -177,7 +177,7 @@ viewContact contact =
     div [ class "contact" ]
         [ div [ class "contact__header" ]
             [ h2 [ class "contact__name" ] [ text contact.name ]
-            , button [ class "contact__button contact__button--dial" ] [ a [ href contact.number ] [ text "DIAL" ] ]
+            , button [ class "contact__button contact__button--dial" ] [ a [ href ("tel:+" ++ contact.number) ] [ text "DIAL" ] ]
             , button [ class "contact__button contact__button--delete", onClick (DeleteContact contact.id_) ] [ text "DEL" ]
             ]
         , p [ class "contact__number" ] [ a [] [ text contact.number ] ]
