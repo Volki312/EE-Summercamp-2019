@@ -27,15 +27,23 @@ But for now, navigate to **api** or **client** folder and use their scripts.
 For a starter, you will most likely want to open up two terminals like so:
 
 **Terminal 1:**
+
 **`cd api`**
+
 **`npm install`** <-- Install all the NodeJS package dependencies
+
 **`npm start`** or **`nodemon`** if you have it installed <-- Run the server. Open http://localhost:9000 to view it in the browser.
 
 **Terminal 2:**
+
 **`npm install create-elm-app -g`** <-- This will install create-elm-app necessary for app start
+
 **`cd client`**
+
 **`npm install`** <-- Install all the NodeJS package dependencies
+
 **`elm install`** <-- Install all the Elm package dependencies
+
 **`elm-app start`** <-- Run the app in development mode. Open http://localhost:3000 to view it in the browser.
 
 You have a list of all the avaliable scripts in the corresponding README.md files.
@@ -51,7 +59,7 @@ With that being said, I have used this occasion (EE Summercamp) to polish my kno
 
 ## Live example
 
-Api is deployed [here](https://simplephonebook.herokuapp.com/) with Heroku, whilst client is deployed on my [personal website](http://student.oss.unist.hr/~jv46250/) that's granted by college.
+Api is deployed [here](https://simplephonebook.herokuapp.com/) with Heroku, whilst client is deployed [here](https://volki312.github.io/Phonebook/) with GitHub Pages or [here](http://student.oss.unist.hr/~jv46250/) with my College pages.
 
 //TODO
 Technologies used:

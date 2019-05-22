@@ -18,7 +18,7 @@ elm-app install <package-name>
 ├── package-lock.json
 ├── package.json
 ├── public/
-│   ├── favicon.ico
+│   ├── favicon.png
 │   ├── index.html
 │   ├── logo.svg
 │   └── manifest.json

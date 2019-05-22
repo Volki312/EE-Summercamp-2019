@@ -11,11 +11,12 @@ import List
 
 
 
+--import Debug
 -- MAIN
 
 
 main =
-    Browser.element
+    Browser.document
         { init = init
         , update = update
         , subscriptions = subscriptions
@@ -56,8 +57,9 @@ type alias Model =
 
 
 init : String -> ( Model, Cmd Msg )
-init apiUrl =
-    ( { status = Loading, form = { name = "", number = "", email = "" }, api = apiUrl }, readContacts apiUrl)
+init api =
+    --( { status = Loading, form = { name = "", number = "", email = "" }, api = "https://simplephonebook.herokuapp.com/contacts/" }, readContacts "https://simplephonebook.herokuapp.com/contacts/" )
+    ( Model Loading (Form "" "" "") api, readContacts api )
 
 
 
@@ -83,7 +85,7 @@ update msg model =
     in
     case msg of
         LoadContacts ->
-            ( { model | status = Loading }, readContacts model.api)
+            ( { model | status = Loading }, readContacts model.api )
 
         GotContacts result ->
             case result of
@@ -96,15 +98,15 @@ update msg model =
         Uploaded result ->
             case result of
                 Ok _ ->
-                    ( { model | status = Loading }, readContacts model.api)
+                    ( { model | status = Loading }, readContacts model.api )
 
                 Err _ ->
                     ( { model | status = Failure }, Cmd.none )
 
-        SubmitForm contact apiUrl->
-            ( model
+        SubmitForm contact api ->
+            ( { model | form = Form "" "" "" }
             , Http.post
-                { url = apiUrl
+                { url = api
                 , body = Http.jsonBody (contactEncoder contact)
                 , expect = Http.expectWhatever Uploaded
                 }
@@ -146,12 +148,16 @@ subscriptions model =
 -- VIEW
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
-    div [ id "main" ]
-        [ h1 [] [ text "Phone book" ]
-        , viewBody model
+    { title = "Phonebook"
+    , body =
+        [ div [ id "main" ]
+            [ h1 [] [ text "Phone book" ]
+            , viewBody model
+            ]
         ]
+    }
 
 
 viewBody : Model -> Html Msg
@@ -161,6 +167,8 @@ viewBody model =
             div []
                 [ p [] [ text "Couldn't load contacts for some reason." ]
                 , button [ onClick LoadContacts ] [ text "Try again" ]
+
+                --, button [ preventDefaultOn "click" (JD.map alwaysPreventDefault (JD.succeed LoadContacts)) ] [ text "Try again" ]
                 ]
 
         Loading ->
@@ -168,7 +176,7 @@ viewBody model =
 
         Success contacts ->
             div [ id "phonebook" ]
-                [ viewForm model
+                [ viewForm model.form model.api
                 , div [ id "phonebook__contacts" ] (List.map viewContact contacts)
                 ]
 
@@ -179,6 +187,8 @@ viewContact contact =
         [ div [ class "contact__header" ]
             [ h2 [ class "contact__name" ] [ text contact.name ]
             , button [ class "contact__button contact__button--dial" ] [ a [ href ("tel:+" ++ contact.number) ] [ text "DIAL" ] ]
+
+            --, button [ class "contact__button contact__button--delete", preventDefaultOn "click" (JD.map alwaysPreventDefault (JD.succeed (DeleteContact contact.id_))) ] [ text "DEL" ]
             , button [ class "contact__button contact__button--delete", onClick (DeleteContact contact.id_) ] [ text "DEL" ]
             ]
         , p [ class "contact__number" ] [ a [] [ text contact.number ] ]
@@ -186,20 +196,20 @@ viewContact contact =
         ]
 
 
-viewForm : Model -> Html Msg
-viewForm model =
-    let
-        form =
-            model.form
-    in
-    (
+viewForm : Form -> String -> Html Msg
+viewForm form api =
+    --let
+    --    form =
+    --        model.form
+    --in
     Html.form [ id "phonebook__form" ]
-    [ viewInput "Name*: " "text" "phonebook__name" " Josip" form.name Name
-    , viewInput "Number*: " "text" "phonebook__number" " 098662672" form.number Number
-    , viewInput "Email: " "text" "phonebook__email" " josip312@hotmail.com" form.email Email
-    , button [ id "phonebook__button", onClick (SubmitForm (assembleContact form.name form.number form.email) model.api), value "+" ] [ text "+" ]
-    ]
-    )
+        [ viewInput "Name*: " "text" "phonebook__name" " Josip" form.name Name
+        , viewInput "Number*: " "text" "phonebook__number" " 098662672" form.number Number
+        , viewInput "Email: " "text" "phonebook__email" " josip312@hotmail.com" form.email Email
+
+        --, button [ id "phonebook__button", onClick (SubmitForm (assembleContact form.name form.number form.email) model.api), value "+" ] [ text "+" ]
+        , button [ id "phonebook__button", preventDefaultOn "click" (JD.map alwaysPreventDefault (JD.succeed (SubmitForm (assembleContact form.name form.number form.email) api))), value "+" ] [ text "+" ]
+        ]
 
 
 viewInput : String -> String -> String -> String -> String -> (String -> msg) -> Html msg
@@ -256,10 +266,10 @@ contactEncoder contact =
 
 
 
--- MAYBES
-
-
+-- MAYBES AND HELPERS
 -- Not necessary atm
+
+
 checkContact : Maybe Contact -> Contact
 checkContact maybeContact =
     case maybeContact of
@@ -276,6 +286,8 @@ checkContact maybeContact =
 
 
 -- Not necessary atm
+
+
 checkEmail : Maybe String -> String
 checkEmail maybeEmail =
     case maybeEmail of
@@ -284,3 +296,8 @@ checkEmail maybeEmail =
 
         Nothing ->
             ""
+
+
+alwaysPreventDefault : msg -> ( msg, Bool )
+alwaysPreventDefault msg =
+    ( msg, True )

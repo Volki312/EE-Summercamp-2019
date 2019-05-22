@@ -7,5 +7,6 @@ module.exports = {
 };
 
 module.exports = {
-    homepage: "http://student.oss.unist.hr/~jv46250/"
+    //homepage: "http://student.oss.unist.hr/~jv46250/"
+    homepage: "https://volki312.github.io/Phonebook/"
 }
