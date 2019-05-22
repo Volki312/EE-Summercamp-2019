@@ -16,7 +16,7 @@ import List
 
 
 main =
-    Browser.element
+    Browser.document
         { init = init
         , update = update
         , subscriptions = subscriptions
@@ -57,8 +57,9 @@ type alias Model =
 
 
 init : String -> ( Model, Cmd Msg )
-init apiUrl =
-    ( { status = Loading, form = { name = "", number = "", email = "" }, api = apiUrl }, readContacts apiUrl )
+init api =
+    --( { status = Loading, form = { name = "", number = "", email = "" }, api = "https://simplephonebook.herokuapp.com/contacts/" }, readContacts "https://simplephonebook.herokuapp.com/contacts/" )
+    ( Model Loading (Form "" "" "") api, readContacts api )
 
 
 
@@ -103,7 +104,7 @@ update msg model =
                     ( { model | status = Failure }, Cmd.none )
 
         SubmitForm contact api ->
-            ( { model | form = { form | name = "", number = "", email = "" } }
+            ( { model | form = Form "" "" "" }
             , Http.post
                 { url = api
                 , body = Http.jsonBody (contactEncoder contact)
@@ -147,12 +148,16 @@ subscriptions model =
 -- VIEW
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
-    div [ id "main" ]
-        [ h1 [] [ text "Phone book" ]
-        , viewBody model
+    { title = "Phonebook"
+    , body =
+        [ div [ id "main" ]
+            [ h1 [] [ text "Phone book" ]
+            , viewBody model
+            ]
         ]
+    }
 
 
 viewBody : Model -> Html Msg
@@ -171,7 +176,7 @@ viewBody model =
 
         Success contacts ->
             div [ id "phonebook" ]
-                [ viewForm model
+                [ viewForm model.form model.api
                 , div [ id "phonebook__contacts" ] (List.map viewContact contacts)
                 ]
 
@@ -182,6 +187,7 @@ viewContact contact =
         [ div [ class "contact__header" ]
             [ h2 [ class "contact__name" ] [ text contact.name ]
             , button [ class "contact__button contact__button--dial" ] [ a [ href ("tel:+" ++ contact.number) ] [ text "DIAL" ] ]
+
             --, button [ class "contact__button contact__button--delete", preventDefaultOn "click" (JD.map alwaysPreventDefault (JD.succeed (DeleteContact contact.id_))) ] [ text "DEL" ]
             , button [ class "contact__button contact__button--delete", onClick (DeleteContact contact.id_) ] [ text "DEL" ]
             ]
@@ -190,18 +196,19 @@ viewContact contact =
         ]
 
 
-viewForm : Model -> Html Msg
-viewForm model =
-    let
-        form =
-            model.form
-    in
+viewForm : Form -> String -> Html Msg
+viewForm form api =
+    --let
+    --    form =
+    --        model.form
+    --in
     Html.form [ id "phonebook__form" ]
         [ viewInput "Name*: " "text" "phonebook__name" " Josip" form.name Name
         , viewInput "Number*: " "text" "phonebook__number" " 098662672" form.number Number
         , viewInput "Email: " "text" "phonebook__email" " josip312@hotmail.com" form.email Email
+
         --, button [ id "phonebook__button", onClick (SubmitForm (assembleContact form.name form.number form.email) model.api), value "+" ] [ text "+" ]
-        , button [ id "phonebook__button", preventDefaultOn "click" (JD.map alwaysPreventDefault (JD.succeed (SubmitForm (assembleContact form.name form.number form.email) model.api))), value "+" ] [ text "+" ]
+        , button [ id "phonebook__button", preventDefaultOn "click" (JD.map alwaysPreventDefault (JD.succeed (SubmitForm (assembleContact form.name form.number form.email) api))), value "+" ] [ text "+" ]
         ]
 
 
