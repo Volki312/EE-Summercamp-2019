@@ -59,10 +59,19 @@ With that being said, I have used this occasion (EE Summercamp) to polish my kno
 
 ## Live example
 
-Api is deployed [here](https://simplephonebook.herokuapp.com/) with Heroku, whilst client is deployed [here](https://volki312.github.io/Phonebook/) with GitHub Pages or [here](http://student.oss.unist.hr/~jv46250/) with my College pages.
+Api is deployed [here](https://simplephonebook.herokuapp.com/) with Heroku, whilst client is deployed [here](https://volki312.github.io/Phonebook/) with GitHub Pages and [here](http://student.oss.unist.hr/~jv46250/) with my College pages.
 
-//TODO
-Technologies used:
-
-//TODO
 ## Progressive web app
+You can save the link(app) on mobile home for some cool stuff.
+
+
+//TODO - zanemarivo:
+- Prompt user to install the app
+- NodeJS skripte za pokreniti server i klijent
+- Pug
+- SCSS/Elm-CSS/Elm-SCSS
+- ?Gulp? (nepotreban)
+- Update funkcionalnost dodati (crUd aplikacija <--)
+- Lazy loading eventualno ručno štagod optimizirati
+- Klijentska provjera unosa kontakta
+- UI...
