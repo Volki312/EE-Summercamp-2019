@@ -1,6 +1,6 @@
 # Phonebook
 
-This project is a full stack PWA with CRUD functionalities, presented as a mockup of a standard Phonebook. Backend is made with NodeJS([ExpressJS](https://expressjs.com/)), DB is [MySQL](https://www.mysql.com/), and frontend is made with [Elm](https://elm-lang.org/).
+This project is a full stack PWA with CRUD functionalities, presented as a mockup of a standard Phonebook. Backend is made with NodeJS([ExpressJS](https://expressjs.com/)), DB is [MySQL](https://www.mysql.com/), and frontend is made with [Elm](https://elm-lang.org/). Scroll down for addition information about technologies used.
 
 ## Project structure
 
@@ -51,11 +51,13 @@ You have a list of all the avaliable scripts in the corresponding README.md file
 ## Summary
 
 This app is made as an entry task to [Extension Engine Summer Camp](https://summercamp.extensionengine.com/).
-App theme and technologies used were all optional, so I decided for a simple CRUD application (Phonebook). NodeJS (Express) for Backend is a reasonable choice, MySQL is kind of picked at random. But why Elm?
+App theme and technologies used were all optional, so I decided for a simple CRUD application (Phonebook). NodeJS (Express) for Backend is a reasonable choice, MySQL is kind of a random pick, but why Elm?
 
 Elm promotes itself as "a delightful language for reliable webapps", and they sure live up to those words. There are many perks of using this language, but I will point out only two of them. Elm generates JavaScript with **great performance** and **no runtime exceptions**. If you are interested in other pros of using Elm, check out [Elm homepage](https://elm-lang.org/) for more info.
 
-With that being said, I have used this occasion (EE Summercamp) to polish my knowledge of Elm, and to promote language itself.
+With that being said, I have used this occasion (EE Summercamp application) to polish my knowledge of Elm, and to promote language itself. Besides Elm, **ReactJS and Vue.js are my go-to frameworks**.
+
+![Google Chrome audit results](https://snag.gy/tSZEys.jpg)
 
 ## Live example
 
